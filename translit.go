@@ -1,74 +1,200 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	// "io/ioutil"
 	"os"
-
-	"github.com/deanishe/awgo"
+	"os/exec"
+	"strings"
 )
 
-var (
-	startDir     string       // Directory to read
-	minimumScore float64      // Search score cutoff
-	wf           *aw.Workflow // Our Workflow object
-)
-
-func init() {
-	startDir = os.Getenv("HOME") // Where we'll look for directories
-	wf = aw.New()                // Initialise workflow
+var trTable = map[rune]rune{
+	// cyrillic
+	'q':  'я',
+	'w':  'ш',
+	'e':  'е',
+	'r':  'р',
+	't':  'т',
+	'y':  'ы',
+	'u':  'у',
+	'i':  'и',
+	'o':  'о',
+	'p':  'п',
+	'[':  'ю',
+	']':  'ж',
+	'a':  'а',
+	's':  'с',
+	'd':  'д',
+	'f':  'ф',
+	'g':  'г',
+	'h':  'ч',
+	'j':  'й',
+	'k':  'к',
+	'l':  'л',
+	'\\': 'э',
+	'`':  'щ',
+	'z':  'з',
+	'x':  'х',
+	'c':  'ц',
+	'v':  'в',
+	'b':  'б',
+	'n':  'н',
+	'm':  'м',
+	'-':  'ь',
+	'=':  'ъ',
+	'Q':  'Я',
+	'W':  'Ш',
+	'E':  'Е',
+	'R':  'Р',
+	'T':  'Т',
+	'Y':  'Ы',
+	'U':  'У',
+	'I':  'И',
+	'O':  'О',
+	'P':  'П',
+	'{':  'Ю',
+	'}':  'Ж',
+	'A':  'А',
+	'S':  'С',
+	'D':  'Д',
+	'F':  'Ф',
+	'G':  'Г',
+	'H':  'Ч',
+	'J':  'Й',
+	'K':  'К',
+	'L':  'Л',
+	'|':  'Э',
+	'~':  'Щ',
+	'Z':  'З',
+	'X':  'Х',
+	'C':  'Ц',
+	'V':  'В',
+	'B':  'Б',
+	'N':  'Н',
+	'M':  'М',
+	'_':  'Ь',
+	'+':  'Ъ',
+	// latin
+	'я': 'q',
+	'ш': 'w',
+	'е': 'e',
+	'р': 'r',
+	'т': 't',
+	'ы': 'y',
+	'у': 'u',
+	'и': 'i',
+	'о': 'o',
+	'п': 'p',
+	'ю': '[',
+	'ж': ']',
+	'а': 'a',
+	'с': 's',
+	'д': 'd',
+	'ф': 'f',
+	'г': 'g',
+	'ч': 'h',
+	'й': 'j',
+	'к': 'k',
+	'л': 'l',
+	'э': '\\',
+	'щ': '`',
+	'з': 'z',
+	'х': 'x',
+	'ц': 'c',
+	'в': 'v',
+	'б': 'b',
+	'н': 'n',
+	'м': 'm',
+	'ь': '-',
+	'ъ': '=',
+	'Я': 'Q',
+	'Ш': 'W',
+	'Е': 'E',
+	'Р': 'R',
+	'Т': 'T',
+	'Ы': 'Y',
+	'У': 'U',
+	'И': 'I',
+	'О': 'O',
+	'П': 'P',
+	'Ю': '{',
+	'Ж': '}',
+	'А': 'A',
+	'С': 'S',
+	'Д': 'D',
+	'Ф': 'F',
+	'Г': 'G',
+	'Ч': 'H',
+	'Й': 'J',
+	'К': 'K',
+	'Л': 'L',
+	'Э': '"',
+	'Щ': '~',
+	'З': 'Z',
+	'Х': 'X',
+	'Ц': 'C',
+	'В': 'V',
+	'Б': 'B',
+	'Н': 'N',
+	'М': 'M',
+	'Ь': '_',
+	'Ъ': '+',
 }
 
-// run executes the Script Filter.
-func run() {
+var ruKl = "com.apple.keylayout.Russian-Phonetic"
+var enKl = "com.apple.keylayout.US"
 
-	var query string
+// var issw = "issw"
 
-	// ----------------------------------------------------------------
-	// Handle CLI arguments
-	// ----------------------------------------------------------------
-
-	// You should always use wf.Args() in Script Filters. It contains the
-	// same as os.Args[1:], but the arguments are first parsed for AwGo's
-	// magic actions (i.e. `workflow:*` to allow the user to easily open
-	// the log or data/cache directory).
-	if args := wf.Args(); len(args) > 0 {
-		// If you're using "{query}" or "$1" (with quotes) in your
-		// Script Filter, $1 will always be set, even if to an empty
-		// string.
-		// This guard serves mostly to prevent errors when run on
-		// the command line.
-		query = args[0]
-	}
-
-	// ----------------------------------------------------------------
-	// Filter items based on user query
-	// ----------------------------------------------------------------
-
-	if query != "" {
-
-		res := wf.Filter(query)
-
-		log.Printf("%d results match \"%s\"", len(res), query)
-
-		for i, r := range res {
-			log.Printf("%02d. score=%0.1f sortkey=%s", i+1, r.Score, wf.Feedback.Keywords(i))
+func tr(s string) string {
+	str := ""
+	for _, c := range s {
+		if t, ok := trTable[c]; ok {
+			str += string(t)
+		} else {
+			str += string(c)
 		}
 	}
-
-	// ----------------------------------------------------------------
-	// Send results to Alfred
-	// ----------------------------------------------------------------
-
-	// Show a warning in Alfred if there are no items
-	wf.WarnEmpty("No matching folders found", "Try a different query?")
-
-	// Send JSON to Alfred. After calling this function, you can't send
-	// any more results to Alfred.
-	wf.SendFeedback()
+	return str
 }
 
 func main() {
-	// Call workflow via `Run` wrapper to catch any errors, log them
-	// and display an error message in Alfred.
-	wf.Run(run)
+	// localPart = os.Getenv("LOCAL_PART")
+	issw := os.Getenv("HOME") + "/bin/issw"
+	// str, err := ioutil.ReadAll(os.Stdin)
+	query := ""
+
+	if len(os.Args) > 1 {
+		query = os.Args[1]
+	} else {
+		os.Exit(-1)
+	}
+
+	out, err := exec.Command(issw).Output()
+	if err != nil {
+		fmt.Println("error occured")
+		fmt.Printf("%s", err)
+	}
+	cuKl := strings.TrimSpace(string(out))
+	// fmt.Println(strings.TrimSpace(string(cuKl)))
+	// fmt.Println(cuKl)
+	if cuKl == enKl {
+		_, err := exec.Command(issw, ruKl).Output()
+		if err != nil {
+			fmt.Println("error occured")
+			fmt.Printf("%s", err)
+		}
+		//fmt.Println(string(out))
+	} else {
+		_, err := exec.Command(issw, enKl).Output()
+		if err != nil {
+			fmt.Println("error occured")
+			fmt.Printf("%s", err)
+		}
+		//fmt.Println(string(out))
+	}
+
+	fmt.Println(tr(string(query)))
+	os.Exit(0)
+
 }
