@@ -142,7 +142,9 @@ var trTable = map[rune]rune{
 }
 
 var ruKl = "com.apple.keylayout.Russian-Phonetic"
-var enKl = "com.apple.keylayout.US"
+
+// var enKl = "com.apple.keylayout.US"
+var enKl = "com.apple.keylayout.ABC"
 
 // var issw = "issw"
 
