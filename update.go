@@ -2,8 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
-	"os/exec"
 
 	aw "github.com/deanishe/awgo"
 )
@@ -16,11 +14,12 @@ func doUpdate() error {
 
 // checkForUpdate runs "./alsf update" in the background if an update check is due.
 func checkForUpdate() error {
-	if !wf.UpdateCheckDue() || aw.IsRunning("update") {
-		return nil
-	}
-	cmd := exec.Command(os.Args[0], "update")
-	return aw.RunInBackground("update", cmd)
+	// if !wf.UpdateCheckDue() || aw.IsRunning("update") {
+	// 	return nil
+	// }
+	// cmd := exec.Command(os.Args[0], "update")
+	// return aw.RunInBackground("update", cmd)
+	return nil
 }
 
 // showUpdateStatus adds an "update available!" message to Script Filters if an update is available

@@ -1,9 +1,11 @@
 package main
 
 import (
-	//	"log"
-	//	"os"
+	"log"
+	"os/exec"
+	"strings"
 
+	//	"os"
 	"os"
 
 	"github.com/deanishe/awgo"
@@ -51,6 +53,30 @@ func run() {
 		// This guard serves mostly to prevent errors when run on
 		// the command line.
 		query = args[0]
+
+		log.Printf("query=%s", query)
+
+		issw := os.Getenv("HOME") + "/bin/issw"
+
+		out, err := exec.Command(issw).Output()
+		if err != nil {
+			log.Printf("err: %s", err)
+		}
+		cuKl := strings.TrimSpace(string(out))
+		if cuKl == enKl {
+			_, err := exec.Command(issw, ruKl).Output()
+			if err != nil {
+				log.Printf("err: %s", err)
+			}
+		} else {
+			_, err := exec.Command(issw, enKl).Output()
+			if err != nil {
+				log.Printf("err: %s", err)
+			}
+		}
+
+		wf.NewItem(tr(string(query)))
+		wf.SendFeedback()
 	}
 }
 

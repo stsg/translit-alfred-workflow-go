@@ -1,13 +1,5 @@
 package main
 
-import (
-	"fmt"
-	// "io/ioutil"
-	"os"
-	"os/exec"
-	"strings"
-)
-
 var trTable = map[rune]rune{
 	// cyrillic
 	'q':  'я',
@@ -160,6 +152,7 @@ func tr(s string) string {
 	return str
 }
 
+/*
 func main() {
 	// localPart = os.Getenv("LOCAL_PART")
 	issw := os.Getenv("HOME") + "/bin/issw"
@@ -200,3 +193,4 @@ func main() {
 	os.Exit(0)
 
 }
+*/
